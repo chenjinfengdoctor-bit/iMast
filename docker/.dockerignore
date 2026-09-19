@@ -1,0 +1,23 @@
+﻿
+# build stuff
+**/node_modules
+server/build
+
+jmv/build
+
+# built files
+client/*.js
+!client/postcss.config.js
+client/*.css
+server/jamovi/server/jamovi_pb2.py
+
+# only needed on windows
+readstat/jamovi/libs/libiconv-win
+readstat/jamovi/libs/zlib-win
+
+# build artifacts
+**/*.o
+**/*.so
+
+# git
+.git
