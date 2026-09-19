@@ -1,0 +1,11 @@
+Package: Descriptive
+Type: Package
+Title: Descriptive Statistics
+Version: 1.0.0
+Author: Sun Zhongjie
+Maintainer: Sun Zhongjie <sun_zj@buaa.edu.cn>
+Description: Descriptive Statistics
+License: None
+Encoding: UTF-8
+LazyData: true
+Imports: jmvcore (>= 0.8.5), R6, ggplot2

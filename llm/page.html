@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI</title>
+    <style>
+        body {
+            padding: 0;
+            overflow: hidden;
+            margin-top: 1px;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            user-select: text;
+        }
+
+        .ai, .user, #context {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            user-select: text;
+        }
+
+        /* Thinking style - light blue, italic, smaller */
+        .thinking-block {
+            background: #f0f7ff;
+            border-left: 3px solid #4a90d9;
+            padding: 8px 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #555;
+            font-style: italic;
+            white-space: pre-wrap;
+        }
+        .thinking-title {
+            font-weight: bold;
+            color: #4a90d9;
+            margin-bottom: 4px;
+            font-style: normal;
+        }
+        /* Action style - light green, bold */
+        .action-block {
+            background: #f0fff4;
+            border-left: 3px solid #52c41a;
+            padding: 8px 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+        }
+        .action-title {
+            font-weight: bold;
+            color: #52c41a;
+            margin-bottom: 4px;
+        }
+
+        pre {
+            overflow-x: scroll;
+            max-width: 100%;
+            font-size: large;
+        }
+
+        pre::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+
+        .ai {
+            margin-top: 5px;
+            border-radius: 5px;
+            background-color: rgb(231, 231, 231);
+            width: auto;
+            max-width: 90%;
+            align-self: flex-start;
+            padding: 5px;
+
+        }
+
+        .user {
+            margin-top: 5px;
+            align-self: flex-end;
+            background-color: lightblue;
+            width: auto;
+            padding: 5px;
+            border-radius: 5px;
+            max-width: 90%;
+        }
+
+        td,
+        th {
+            border: none;
+        }
+
+        table {
+            border-spacing: 0 0;
+        }
+
+        thead tr:first-child th {
+            border-top: 2px solid;
+            border-bottom: 1px solid;
+            border-collapse: collapse;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 2px solid;
+            border-collapse: collapse;
+        }
+
+        #optimize {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 0 10px;
+            font-size: 14px;
+            margin-right: 4px;
+        }
+
+        #optimize:hover {
+            opacity: 0.9;
+        }
+
+        #optimize:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Tool call card */
+        .tool-call {
+            background: #f0f5ff;
+            border-left: 3px solid #409eff;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin: 6px 0;
+            font-size: 13px;
+        }
+        .tool-call-header {
+            font-weight: bold;
+            color: #409eff;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tool-call-params {
+            background: #fff;
+            border-radius: 3px;
+            padding: 6px 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .tool-call-status {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: normal;
+        }
+        .tool-call-status.running {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+        .tool-call-status.success {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+        .tool-call-status.error {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: inline-flex;
+            gap: 3px;
+            padding: 4px 0;
+        }
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        /* Clear button */
+        #clearChat {
+            height: 30px;
+            padding: 0 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            border: 1px solid #ff4d4f;
+            background: #fff;
+            color: #ff4d4f;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #clearChat:hover {
+            background: #ff4d4f;
+            color: white;
+        }
+
+        /* Message avatar */
+        .msg-avatar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 12px;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+        .msg-avatar.ai { background: #409eff; color: white; }
+        .msg-avatar.user { background: #52c41a; color: white; }
+
+        /* Error message */
+        .error-msg {
+            background: #fff2f0;
+            border-left: 3px solid #ff4d4f;
+            color: #ff4d4f;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Scrollbar */
+        #context::-webkit-scrollbar {
+            width: 4px;
+        }
+        #context::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 2px;
+        }
+    </style>
+    <script src="./mathpix-markdown-it.js"></script>
+</head>
+
+<body>
+    <!-- Close button -->
+    <button id="closeBtn" title="Close AI panel" style="position:fixed;top:8px;right:12px;z-index:999;width:28px;height:28px;border:none;background:transparent;color:#999;font-size:20px;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+    <script>
+        document.getElementById("closeBtn").onclick = function() {
+            // Send close-ai message to parent window
+            window.parent.postMessage({type: "close-ai"}, "*");
+        };
+    </script>
+    <script type="module">
+        function formatFix(str) {
+            return str
+                .replace(/(\*\*)(.+)(\*\*)/g, (match, lb, content, rb) => {
+                    return `${lb}\u200B${content}\u200B${rb}`
+                })
+                .replace(/---/g, (match) => {
+                    return `\n${match}\n`
+                })
+        }
+        window.loadMathJax();
+        let promptText = "I am the IMAST AI Assistant, an intelligent tool designed for medical and statistical analysis. I can help you with data exploration, hypothesis testing, regression modeling, and more. Let me know how I can assist with your statistical needs.";
+
+        const queryString = window.location.search;
+        const up = new URLSearchParams(queryString);
+        const u = atob(up.get("url"))
+        const iid = up.get("iid")
+        let bob = document.createElement("div");
+        bob.className = "ai";
+        document.getElementById("context").append(bob);
+        let options = {
+            htmlTags: true,
+            typographer: false
+        }
+        let texHtml = window.render(formatFix(promptText), options)
+        bob.innerHTML = texHtml;
+
+        async function sendMessage() {
+            let inputEl = document.getElementById("input");
+            let sendBtn = document.getElementById("send");
+            if (!inputEl.value.trim()) return;
+            let userText = inputEl.value;
+            inputEl.value = "";
+            sendBtn.disabled = true;
+            sendBtn.textContent = "Thinking...";
+            let ubob = document.createElement("div");
+            ubob.className = "user";
+            ubob.innerText = userText;
+            document.getElementById("context").append(ubob);
+            let bob = document.createElement("div");
+            bob.className = "ai";
+            bob.innerHTML = "<em>AI is thinking, may call tools to analyze data...</em>";
+            document.getElementById("context").append(bob);
+            document.getElementById("context").scrollTop
+                = document.getElementById("context").scrollHeight;
+            let response = await fetch("/input", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    url: u,
+                    iid: iid,
+                    data: userText
+                })
+            })
+            checkNavigateHeader(response);
+            sendBtn.disabled = false;
+            sendBtn.textContent = "Send";
+            let reader = response.body.getReader();
+            let decoder = new TextDecoder("utf-8");
+            let buffer = "";
+            let blockType = "normal"; // normal, thinking, action
+            
+            function renderBuffer(buf, type) {
+                let html = window.render(buf, options);
+                if (type === "thinking") {
+                    html = '<div class="thinking-block"><div class="thinking-title">💭 思考过程</div>' + html + '</div>';
+                } else if (type === "action") {
+                    html = '<div class="action-block"><div class="action-title">⚡ 操作</div>' + html + '</div>';
+                }
+                return html;
+            }
+            
+            async function read() {
+                let { done, value } = await reader.read()
+                if (done) {
+                    return true;
+                } else {
+                    const text = decoder.decode(value, { stream: true })
+                    buffer += formatFix(text);
+                    
+                    // Detect NAVIGATE marker
+                    const navMatch = buffer.match(/<!--NAVIGATE:\s*(.+?)-->/);
+                    if (navMatch) {
+                        const navUrl = navMatch[1].trim();
+                        console.log('NAVIGATE marker detected:', navUrl);
+                        if (window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'navigate',
+                                url: navUrl
+                            }, '*');
+                        }
+                        buffer = buffer.replace(/<!--NAVIGATE:\s*.+?-->\n?/, '');
+                    }
+                    
+                    // Real-time parsing of thinking/action markers
+                    let displayHtml = "";
+                    
+                    // Split buffer by markers
+                    let remaining = buffer;
+                    let currentType = "normal";
+                    
+                    while (remaining.length > 0) {
+                        // Find the next marker
+                        const thinkStart = remaining.indexOf("[THINKING_START]");
+                        const thinkEnd = remaining.indexOf("[THINKING_END]");
+                        const actionStart = remaining.indexOf("[ACTION_START]");
+                        const actionEnd = remaining.indexOf("[ACTION_END]");
+                        
+                        // Find the earliest marker
+                        let earliest = -1;
+                        let markerType = "";
+                        
+                        const markers = [
+                            { pos: thinkStart, type: "thinkStart" },
+                            { pos: thinkEnd, type: "thinkEnd" },
+                            { pos: actionStart, type: "actionStart" },
+                            { pos: actionEnd, type: "actionEnd" }
+                        ].filter(m => m.pos >= 0);
+                        
+                        if (markers.length > 0) {
+                            markers.sort((a, b) => a.pos - b.pos);
+                            earliest = markers[0].pos;
+                            markerType = markers[0].type;
+                        }
+                        
+                        if (earliest === -1) {
+                            // No more markers, render remaining
+                            displayHtml += renderBuffer(remaining, currentType);
+                            break;
+                        }
+                        
+                        // Render text before the marker
+                        const before = remaining.substring(0, earliest);
+                        if (before.length > 0) {
+                            displayHtml += renderBuffer(before, currentType);
+                        }
+                        
+                        // Skip the marker
+                        remaining = remaining.substring(earliest + (markerType === "thinkStart" || markerType === "thinkEnd" ? 16 : 14));
+                        
+                        // Update current type
+                        if (markerType === "thinkStart") currentType = "thinking";
+                        else if (markerType === "thinkEnd") currentType = "normal";
+                        else if (markerType === "actionStart") currentType = "action";
+                        else if (markerType === "actionEnd") currentType = "normal";
+                    }
+                    
+                    bob.innerHTML = displayHtml;
+                    document.getElementById("context").scrollTop
+                        = document.getElementById("context").scrollHeight;
+                }
+                return false;
+            }
+            let result = false;
+            do {
+                result = await read();
+            } while (!result)
+
+            // Post-process: render tool calls, thinking, and action blocks
+            if (buffer.includes("#FunctionCall") || 
+                buffer.includes("[THINKING_START]") || 
+                buffer.includes("[ACTION_START]")) {
+                postProcessToolCalls(bob, buffer);
+            }
+        }
+
+        function postProcessThinkingAndAction(element, rawText) {
+            // First render thinking and action blocks
+            let html = rawText;
+            
+            // Replace THINKING blocks
+            html = html.replace(/\[THINKING_START\]([\s\S]*?)\[THINKING_END\]/g, 
+                '<div class="thinking-block"><div class="thinking-title">💭 思考过程</div>$1</div>');
+            
+            // Replace ACTION blocks
+            html = html.replace(/\[ACTION_START\]([\s\S]*?)\[ACTION_END\]/g, 
+                '<div class="action-block"><div class="action-title">⚡ 操作</div>$1</div>');
+            
+            return html;
+        }
+
+        function postProcessToolCalls(element, rawText) {
+            // First render thinking and action blocks
+            let processedText = postProcessThinkingAndAction(element, rawText);
+            
+            // Split content by #FunctionCall markers
+            const parts = processedText.split(/(#FunctionCall\s*\n)/);
+            let html = "";
+            let inToolCall = false;
+            let toolCallBuffer = "";
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                if (part.startsWith("#FunctionCall")) {
+                    inToolCall = true;
+                    continue;
+                }
+                if (inToolCall) {
+                    // Try to parse JSON from the next non-empty line
+                    const lines = part.split("\n");
+                    let jsonLine = "";
+                    let remainingLines = [];
+                    let foundJson = false;
+                    for (const line of lines) {
+                        if (!foundJson && line.trim().startsWith("{")) {
+                            jsonLine = line.trim();
+                            foundJson = true;
+                        } else if (foundJson) {
+                            remainingLines.push(line);
+                        }
+                    }
+                    if (jsonLine) {
+                        try {
+                            const toolCall = JSON.parse(jsonLine);
+                            const toolName = toolCall.name || "unknown";
+                            const toolParams = toolCall.parameters || {};
+                            const paramsStr = JSON.stringify(toolParams, null, 2);
+                            html += `<div class="tool-call">
+                                <div class="tool-call-header">
+                                    🔧 <strong>${toolName}</strong>
+                                    <span class="tool-call-status success">✓ 已执行</span>
+                                </div>
+                                <div class="tool-call-params">${paramsStr}</div>
+                            </div>`;
+                        } catch (e) {
+                            html += `<div class="tool-call"><div class="tool-call-header">🔧 <strong>工具调用</strong></div><div class="tool-call-params">${jsonLine}</div></div>`;
+                        }
+                    }
+                    // Render remaining text after tool call
+                    const remaining = remainingLines.join("\n").trim();
+                    if (remaining) {
+                        html += window.render(formatFix(remaining), options);
+                    }
+                    inToolCall = false;
+                } else {
+                    // Normal text
+                    if (part.trim()) {
+                        html += window.render(formatFix(part), options);
+                    }
+                }
+            }
+            if (html) {
+                element.innerHTML = html;
+            }
+        }
+
+        async function clearChat() {
+            if (!confirm("确定要清除当前对话历史吗？")) return;
+            try {
+                await fetch("/clear-context", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ iid: iid })
+                });
+            } catch (e) {
+                // Ignore error, clear frontend anyway
+            }
+            const context = document.getElementById("context");
+            context.innerHTML = "";
+            // Re-add welcome message
+            let welcome = document.createElement("div");
+            welcome.className = "ai";
+            welcome.innerHTML = window.render(formatFix(promptText), options);
+            context.append(welcome);
+        }
+
+        async function selectSkill() {
+            const skillBtn = document.getElementById("skill");
+            const originalText = skillBtn.textContent;
+            skillBtn.disabled = true;
+            skillBtn.textContent = "📋...";
+
+            try {
+                // Fetch available skills
+                const response = await fetch("/skills");
+                checkNavigateHeader(response);
+                const result = await response.json();
+                const skills = result.skills || [];
+
+                if (skills.length === 0) {
+                    alert("No analysis skills available.");
+                    skillBtn.textContent = originalText;
+                    skillBtn.disabled = false;
+                    return;
+                }
+
+                // Build skill selection dialog
+                let dialogHtml = `
+                    <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;">
+                        <div style="background:white;border-radius:8px;padding:20px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;">
+                            <h3 style="margin-top:0;">Select AI Skill</h3>
+                            <p style="color:#666;font-size:13px;">Choose a skill to guide the AI through a structured workflow.</p>
+                            <div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;">
+                `;
+
+                for (const skill of skills) {
+                    const scenarios = skill.applicable_scenarios ? skill.applicable_scenarios.slice(0, 3).join(" · ") : "";
+                    dialogHtml += `
+                        <div class="skill-item" data-skill='${JSON.stringify(skill).replace(/'/g, "&#39;")}' style="border:1px solid #e0e0e0;border-radius:6px;padding:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='#409eff';this.style.boxShadow='0 2px 8px rgba(64,158,255,0.2)'" onmouseout="this.style.borderColor='#e0e0e0';this.style.boxShadow='none'">
+                            <div style="font-weight:bold;font-size:15px;color:#333;">${skill.title}</div>
+                            <div style="font-size:12px;color:#999;margin-top:2px;">Category: ${skill.category}</div>
+                            <div style="font-size:13px;color:#666;margin-top:6px;">${skill.description}</div>
+                            <div style="font-size:12px;color:#409eff;margin-top:6px;">Scenarios: ${scenarios}</div>
+                        </div>
+                    `;
+                }
+
+                dialogHtml += `
+                            </div>
+                            <div style="margin-top:15px;text-align:right;">
+                                <button id="cancelSkill" style="padding:6px 16px;border:1px solid #ccc;background:white;border-radius:4px;cursor:pointer;">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Show dialog
+                const dialogContainer = document.createElement("div");
+                dialogContainer.innerHTML = dialogHtml;
+                document.body.appendChild(dialogContainer);
+
+                // Handle skill selection
+                const skillItems = dialogContainer.querySelectorAll(".skill-item");
+                skillItems.forEach(item => {
+                    item.onclick = () => {
+                        const skill = JSON.parse(item.dataset.skill);
+                        document.body.removeChild(dialogContainer);
+                        applySkill(skill);
+                    };
+                });
+
+                // Handle cancel
+                document.getElementById("cancelSkill").onclick = () => {
+                    document.body.removeChild(dialogContainer);
+                };
+
+            } catch (e) {
+                alert("Failed to load skills: " + e.message);
+            }
+
+            skillBtn.textContent = originalText;
+            skillBtn.disabled = false;
+        }
+
+        async function applySkill(skill) {
+            // Show user message with selected skill
+            let ubob = document.createElement("div");
+            ubob.className = "user";
+            ubob.innerHTML = `🎯 <strong>${skill.title}</strong><br><small>Skill selected. AI will follow the structured workflow.</small>`;
+            document.getElementById("context").append(ubob);
+
+            // Show AI thinking message
+            let bob = document.createElement("div");
+            bob.className = "ai";
+            bob.innerHTML = "<em>Loading skill workflow...</em>";
+            document.getElementById("context").append(bob);
+            document.getElementById("context").scrollTop = document.getElementById("context").scrollHeight;
+
+            try {
+                // Get full skill details
+                const detailResponse = await fetch(`/skill/${skill.name}`);
+                const detailResult = await detailResponse.json();
+                const fullSkill = detailResult.skill || skill;
+
+                // Build skill instruction message
+                const workflowText = fullSkill.workflow ? fullSkill.workflow.join("\n") : "";
+                const toolsText = fullSkill.tools_to_use ? fullSkill.tools_to_use.join(", ") : "";
+                const outputsText = fullSkill.key_outputs ? fullSkill.key_outputs.join(", ") : "";
+
+                const skillInstruction = `The user has selected the AI skill: "${fullSkill.title}" (${fullSkill.name}).
+
+Please follow this workflow to complete the task:
+${workflowText}
+
+Recommended tools: ${toolsText}
+
+Expected outputs: ${outputsText}
+
+Notes: ${fullSkill.notes || ""}
+
+Please start executing. If data is not yet loaded, guide the user to import data first.`;
+
+                // Call AI with skill instruction
+                let aiResponse = await fetch("/input", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: u, iid: iid, data: skillInstruction })
+                });
+
+                // Stream AI response
+                let reader = aiResponse.body.getReader();
+                let decoder = new TextDecoder("utf-8");
+                let buffer = "";
+                async function read() {
+                    let { done, value } = await reader.read();
+                    if (done) return true;
+                    const text = decoder.decode(value, { stream: true });
+                    buffer += formatFix(text);
+                    bob.innerHTML = window.render(buffer, options);
+                    document.getElementById("context").scrollTop = document.getElementById("context").scrollHeight;
+                    return false;
+                }
+                let done = false;
+                do { done = await read(); } while (!done);
+
+            } catch (e) {
+                bob.innerHTML = `<em>❌ Skill execution error: ${e.message}</em>`;
+            }
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const uploadBtn = document.getElementById("upload");
+            if (!fileInput.files || fileInput.files.length === 0) return;
+
+            const file = fileInput.files[0];
+            const originalBtnText = uploadBtn.textContent;
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = "📤...";
+
+            // Show user message with filename
+            let ubob = document.createElement("div");
+            ubob.className = "user";
+            ubob.innerHTML = `📎 <strong>${file.name}</strong><br><small>Uploading and parsing...</small>`;
+            document.getElementById("context").append(ubob);
+
+            // Show AI thinking message
+            let bob = document.createElement("div");
+            bob.className = "ai";
+            bob.innerHTML = "<em>Reading document...</em>";
+            document.getElementById("context").append(bob);
+            document.getElementById("context").scrollTop = document.getElementById("context").scrollHeight;
+
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const response = await fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                checkNavigateHeader(response);
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update user message to show parse success
+                    ubob.innerHTML = `📎 <strong>${file.name}</strong><br><small>${result.message}</small>`;
+
+                    // If it's a data file imported to jamovi, navigate to the new dataset
+                    if (result.navigate_url) {
+                        console.log("Navigating to:", result.navigate_url);
+                        if (window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'navigate',
+                                url: result.navigate_url
+                            }, '*');
+                        }
+                        setTimeout(() => {
+                            addMessage("assistant", `✅ File "${file.name}" imported successfully.\n\nDataset loaded in data interface.\n\nWhat would you like me to do with this data? (e.g. "Run commutability analysis")`);
+                        }, 500);
+                    } else {
+                        // Document file - just confirm upload
+                        setTimeout(() => {
+                            addMessage("assistant", `✅ File "${file.name}" uploaded successfully.\n\nFile path: ${result.file_path}\n\nWhat would you like me to do with this data?`);
+                        }, 500);
+                    }
+
+                    uploadBtn.textContent = "✅";
+                    setTimeout(() => { uploadBtn.textContent = originalBtnText; }, 1500);
+                } else {
+                    bob.innerHTML = `<em>❌ ${result.message}</em>`;
+                    uploadBtn.textContent = originalBtnText;
+                }
+            } catch (e) {
+                bob.innerHTML = `<em>❌ Upload error: ${e.message}</em>`;
+                uploadBtn.textContent = originalBtnText;
+            }
+
+            uploadBtn.disabled = false;
+            fileInput.value = ""; // Reset file input
+        }
+
+        async function optimizePrompt() {
+            let inputEl = document.getElementById("input");
+            let optimizeBtn = document.getElementById("optimize");
+            let userText = inputEl.value.trim();
+            if (!userText) return;
+
+            optimizeBtn.disabled = true;
+            optimizeBtn.textContent = "✨...";
+
+            try {
+                // Get current dataset context for better prompt optimization
+                let datasetInfo = "";
+                try {
+                    const ws = new WebSocket(`ws://${window.location.host}/llm/`);
+                    await new Promise((resolve, reject) => {
+                        ws.onopen = resolve;
+                        ws.onerror = reject;
+                    });
+                    ws.send(JSON.stringify({ type: "INFO_REQ", instance_id: iid }));
+                    const infoMsg = await new Promise(resolve => {
+                        ws.onmessage = (e) => resolve(e.data);
+                    });
+                    const info = JSON.parse(infoMsg);
+                    const cols = info.columns || [];
+                    const rows = Math.max(...cols.map(c => c.row_count || 0), 0);
+                    datasetInfo = `Current dataset: "${info.title || 'Untitled'}" with ${cols.length} variables (${cols.map(c => c.name).join(', ')}) and ${rows} rows.`;
+                    ws.close();
+                } catch (e) {
+                    datasetInfo = "";
+                }
+
+                const response = await fetch("/optimize-prompt", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_input: userText,
+                        dataset_context: datasetInfo,
+                        url: u,
+                        iid: iid
+                    })
+                });
+                checkNavigateHeader(response);
+                const result = await response.json();
+                if (result.optimized_prompt) {
+                    inputEl.value = result.optimized_prompt;
+                    optimizeBtn.textContent = "✅";
+                    setTimeout(() => { optimizeBtn.textContent = "✨"; }, 1500);
+                } else {
+                    optimizeBtn.textContent = "✨";
+                    alert("Prompt optimization failed: " + (result.error || "Unknown error"));
+                }
+            } catch (e) {
+                optimizeBtn.textContent = "✨";
+                alert("Prompt optimization error: " + e.message);
+            }
+            optimizeBtn.disabled = false;
+        }
+
+        function bindEvents() {
+            const sendBtn = document.getElementById("send");
+            const optimizeBtn = document.getElementById("optimize");
+            const uploadBtn = document.getElementById("upload");
+            const skillBtn = document.getElementById("skill");
+            const clearBtn = document.getElementById("clearChat");
+            const fileInput = document.getElementById("fileInput");
+            const inputEl = document.getElementById("input");
+            if (sendBtn) sendBtn.onclick = sendMessage;
+            if (optimizeBtn) optimizeBtn.onclick = optimizePrompt;
+            if (uploadBtn) uploadBtn.onclick = () => fileInput.click();
+            if (skillBtn) skillBtn.onclick = selectSkill;
+            if (clearBtn) clearBtn.onclick = clearChat;
+            if (fileInput) fileInput.onchange = uploadFile;
+            if (inputEl) {
+                // Auto-focus input on load
+                setTimeout(() => inputEl.focus(), 300);
+                // Focus input when clicking anywhere in the chat area (not on buttons)
+                document.getElementById("context").addEventListener("click", () => inputEl.focus());
+                // Ensure paste works
+                inputEl.addEventListener("paste", (e) => {
+                    // Let default paste behavior happen
+                });
+                inputEl.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+        }
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", bindEvents);
+        } else {
+            bindEvents();
+        }
+    </script>
+
+    <div id="context" style="display:flex;flex-direction: column;gap: 5px;overflow-y: scroll;height: calc(100vh - 78px);
+        scrollbar-width: 3px;box-sizing: border-box;width: 100%;padding-bottom: 4px;padding-left: 48px;">
+    </div>
+    <div style="position: absolute;bottom: 0;left: 48px;right: 0;background: #fff;border-top: 1px solid #e0e0e0;box-sizing: border-box;padding: 6px 8px 6px 4px;">
+        <!-- 第一行：输入框 + Send -->
+        <div style="display: flex;align-items: center;gap: 6px;margin-bottom: 6px;">
+            <input id="input" placeholder="Type your question..." style="flex: 1;min-width: 0;height: 32px;padding: 0 10px;border: 1px solid #ccc;border-radius: 4px;font-size: 14px;outline: none;">
+            <input type="file" id="fileInput" style="display:none;" accept=".csv,.xlsx,.xls,.pdf,.docx,.txt,.tsv">
+            <button id="send" style="height: 32px;padding: 0 18px;font-size: 14px;white-space: nowrap;border: 1px solid #409eff;background: #409eff;color: white;border-radius: 4px;cursor: pointer;">Send</button>
+        </div>
+        <!-- 第二行：功能按钮 -->
+        <div style="display: flex;align-items: center;gap: 4px;">
+            <button id="upload" title="Upload document (CSV, Excel, PDF, Word) for AI to read and analyze" style="height: 26px;padding: 0 8px;font-size: 12px;white-space: nowrap;border: 1px solid #52c41a;background: #52c41a;color: white;border-radius: 4px;cursor: pointer;">📎 Upload</button>
+            <button id="skill" title="Select analysis skill (preset workflow for IVD statistical analysis)" style="height: 26px;padding: 0 8px;font-size: 12px;white-space: nowrap;border: 1px solid #fa8c16;background: #fa8c16;color: white;border-radius: 4px;cursor: pointer;">🎯 Skills</button>
+            <button id="optimize" title="Optimize prompt with AI context" style="height: 26px;padding: 0 8px;font-size: 12px;white-space: nowrap;border: 1px solid #667eea;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);color: white;border-radius: 4px;cursor: pointer;">✨ Optimize</button>
+            <button id="clearChat" title="Clear chat history" style="height: 26px;padding: 0 8px;font-size: 12px;white-space: nowrap;border: 1px solid #ff4d4f;background: #fff;color: #ff4d4f;border-radius: 4px;cursor: pointer;">🗑️ Clear</button>
+        </div>
+    </div>
+<script>
+        // Helper: check if response has X-Navigate-To header and navigate
+        function checkNavigateHeader(response) {
+            const navUrl = response.headers.get('X-Navigate-To');
+            if (navUrl) {
+                console.log('X-Navigate-To detected:', navUrl);
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'navigate',
+                        url: navUrl
+                    }, '*');
+                }
+            }
+        }
+        
+        // Override any parent window context menu blocking
+        document.addEventListener('contextmenu', function(e) {
+            e.stopPropagation();
+            return true;
+        }, true);
+        document.oncontextmenu = function() { return true; };
+        document.onselectstart = null;
+        
+        // Detect NAVIGATE_TO marker in AI responses and notify parent window
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const text = node.textContent || '';
+                        const match = text.match(/\[NAVIGATE_TO:\s*(.+?)\]/);
+                        if (match) {
+                            const targetUrl = match[1].trim();
+                            console.log('NAVIGATE_TO detected:', targetUrl);
+                            // Send message to parent window to navigate
+                            if (window.parent !== window) {
+                                window.parent.postMessage({
+                                    type: 'navigate',
+                                    url: targetUrl
+                                }, '*');
+                            }
+                            // Remove the marker from display
+                            node.innerHTML = node.innerHTML.replace(/\[NAVIGATE_TO:\s*.+?\]/g, '');
+                        }
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.getElementById('context'), {
+            childList: true,
+            subtree: true
+        });
+    </script>
+</body>
+
+</html>

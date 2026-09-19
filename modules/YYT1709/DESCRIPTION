@@ -1,0 +1,12 @@
+Package: YYT1709
+Type: Package
+Title: 体外诊断试剂用校准物测量不确定度评定
+Version: 1.0.0
+Author: 孙中杰
+Maintainer: Zhongjie Sun <sun_zj@buaa.edu.cn>
+Description: 体外诊断试剂用校准物测量不确定度的评定方法。
+    适用于体外诊断定量试剂用产品校准品测量不确定度的评定。
+License: AGPL3.0
+Encoding: UTF-8
+LazyData: true
+Imports: jmvcore (>= 0.8.5), R6

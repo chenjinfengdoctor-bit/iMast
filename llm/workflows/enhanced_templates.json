@@ -1,0 +1,245 @@
+{
+  "workflow_version": "2.0-enhanced",
+  "description": "iMast 增强版统计方法工作流模板（v2.0）。在 v1.0 基础上增加 data_requirements、verified_example、result_tables、common_pitfalls，供 AI 精确操作软件。",
+  "methods": [
+    {
+      "name": "Carryover",
+      "ns": "ReferenceMaterial",
+      "title": "Carryover",
+      "category": "IVD",
+      "subgroup": "Method Performance Evaluation",
+      "purpose": "携带污染评估（CLSI EP10 风格多元回归），通过高-中-低浓度交替测量序列，同时评估携带污染率、漂移、非线性、偏差和不精密度。",
+      "适用场景": [
+        "IVD 分析仪携带污染评估（CLSI EP10）",
+        "样本针/试剂针交叉污染评估",
+        "自动化分析仪多性能参数同步验证"
+      ],
+      "data_requirements": {
+        "description": "需要一个分组列（样本水平）和多个测量值列。数据按高-中-低交替排列，总行数必须为奇数。",
+        "required_columns": [
+          {"name": "l", "type": "TEXT/NOMINAL", "description": "样本水平分组列，值必须与 lf/mf/hf 参数一致（默认 Low/Mid/High）"},
+          {"name": "v1, v2, v3...", "type": "DECIMAL/CONTINUOUS", "description": "测量值列，每个 v 列代表一次运行（run），至少 1 列"}
+        ],
+        "row_count": "必须为奇数（如 3, 5, 7, 9...），因为需要对称的时间中心化编码",
+        "typical_pattern": "Low, Mid, High, Mid, Low（5行）或 Low, Mid, High, Mid, Low, Mid, High（7行）等交替序列",
+        "example_csv": "l,v1,v2,v3\nLow,8.1,8.3,8.2\nMid,50.1,50.3,50.2\nHigh,92.1,92.3,92.2\nMid,50.2,50.1,50.3\nLow,8.2,8.1,8.3"
+      },
+      "parameters": [
+        {"name": "l", "type": "Variable", "required": true, "title": "Sample Level", "description": "分组列名，值为 Low/Mid/High"},
+        {"name": "v", "type": "Variables", "required": true, "title": "Sample Values", "description": "测量值列名列表，如 ['v1','v2','v3']"},
+        {"name": "lf", "type": "String", "required": false, "default": "Low", "title": "Low-level Factor", "description": "低水平在分组列中的标签值"},
+        {"name": "lv", "type": "Number", "required": false, "default": 9, "title": "Low-level Reference Value", "description": "低水平的理论/参考值，用于偏差计算"},
+        {"name": "lb", "type": "Number", "required": false, "default": 2, "title": "Allowable Low-level Bias", "description": "低水平允许偏差（绝对单位）"},
+        {"name": "lcv", "type": "Number", "required": false, "default": 8, "title": "Allowable Low-level CV%", "description": "低水平允许不精密度 CV%"},
+        {"name": "mf", "type": "String", "required": false, "default": "Mid", "title": "Medium-level Factor"},
+        {"name": "mv", "type": "Number", "required": false, "default": 50.5, "title": "Medium-level Reference Value"},
+        {"name": "mb", "type": "Number", "required": false, "default": 4, "title": "Allowable Medium-level Bias"},
+        {"name": "mcv", "type": "Number", "required": false, "default": 3, "title": "Allowable Medium-level CV%"},
+        {"name": "hf", "type": "String", "required": false, "default": "High", "title": "High-level Factor"},
+        {"name": "hv", "type": "Number", "required": false, "default": 92, "title": "High-level Reference Value"},
+        {"name": "hb", "type": "Number", "required": false, "default": 5, "title": "Allowable High-level Bias"},
+        {"name": "hcv", "type": "Number", "required": false, "default": 2, "title": "Allowable High-level CV%"},
+        {"name": "p", "type": "Number", "required": false, "default": 0.01, "title": "alpha", "description": "显著性水平，用于 t 检验临界值"},
+        {"name": "rpd", "type": "Integer", "required": false, "default": 1, "title": "Runs per day (J)", "description": "每天的运行次数，v 列数 = I(天数) × J"}
+      ],
+      "key_parameter_guide": [
+        "l 和 v 是唯一必填参数，其余有合理默认值",
+        "lf/mf/hf 必须与数据中分组列的实际值完全一致（区分大小写），否则报 'Unknown level'",
+        "lv/mv/hv 是各水平的参考值（理论值），偏差 = 实测均值 - 参考值",
+        "lb/mb/hb 是允许偏差（绝对单位，不是百分比），lcv/mcv/hcv 是允许不精密度（CV%）",
+        "rpd(J) 决定 v 列如何分组：v 列总数 = I × J，I 为天数"
+      ],
+      "steps": [
+        "1. 调用 get_dataset 确认数据结构：有一个分组列（值为 Low/Mid/High）和至少一个数值测量列",
+        "2. 确认总行数为奇数（EP10 要求对称编码），如不是则提示用户",
+        "3. 确认分组列中的值与 lf/mf/hf 参数一致",
+        "4. 调用 run_analysis：必填 l=分组列名, v=[测量列名列表]；可选设置各水平参考值和允许限",
+        "5. 调用 interpret_result，重点读取 summary 中的携带污染率 B2adj% 和各 t 检验结果"
+      ],
+      "verified_example": {
+        "analysis_name": "Carryover",
+        "ns": "ReferenceMaterial",
+        "options": {"l": "l", "v": ["v1", "v2", "v3"]},
+        "test_data": "ivd_carryover.csv (18行, l列=Low/Mid/High, v1-v3三列测量值)",
+        "expected_result": "ANALYSIS_COMPLETE, summary 输出 B2adj% 携带污染率"
+      },
+      "result_tables": [
+        {"table": "summary", "key_field": "B2adj%", "description": "汇总携带污染率（%）= B2/B1×100，是最核心的指标", "interpretation": "通常要求 < 1%~3%；负值表示反向携带污染"},
+        {"table": "bg (Basic Statistics)", "fields": "lm/mm/hm (各水平均值), lsd/msd/hsd (各水平SD)", "description": "低/中/高各水平的描述性统计"},
+        {"table": "bg/scb (Bias Summary)", "fields": "b(偏差), ab(允许偏差), w(Yes/No)", "description": "各水平偏差 = 实测均值-参考值，与允许偏差比较", "interpretation": "w=Yes 表示偏差在允许范围内"},
+        {"table": "ig (Imprecision)", "fields": "c(CV%), a(允许CV%), ar(Accept/Reject)", "description": "各水平总不精密度 CV% 与允许限比较", "interpretation": "ar=Accept 表示精密度合格"},
+        {"table": "mr/rp (Regression Parameters)", "fields": "b0(截距), b1(斜率), b2(携带污染), b3(非线性), b4(漂移)", "description": "多元回归系数，Y = B0 + B1·Coded + B2·Carryover + B3·Nonlinearity + B4·Time"},
+        {"table": "t/ts (t-tests)", "fields": "t0~t4, se0~se4", "description": "5 个参数的 t 检验：t0=截距, t1=斜率-1, t2=携带污染, t3=非线性, t4=漂移", "interpretation": "|t| > 临界值(自由度4) 表示该效应显著；携带污染 t2 显著是关注重点"},
+        {"table": "t/st (Sign Test)", "fields": "p(正数个数), n(负数个数), s(Yes/No)", "description": "各效应跨运行的符号一致性检验", "interpretation": "s=Yes 表示所有运行中符号一致，效应更可靠"}
+      ],
+      "result_interpretation": {
+        "carryover_rate": "B2adj% = B2/B1×100，汇总携带污染率",
+        "bias": "各水平偏差 = 实测均值 - 参考值，与 lb/mb/hb 比较",
+        "imprecision": "总 CV% = S/M×100，与 lcv/mcv/hcv 比较",
+        "t_tests": "t2(携带污染)、t3(非线性)、t4(漂移) 显著时需关注；若仅单次运行显著可忽略",
+        "critical_t": "自由度=4，alpha=0.01 时临界 t≈4.604"
+      },
+      "common_pitfalls": [
+        "分组列的值必须与 lf/mf/hf 完全一致（默认 Low/Mid/High），否则报 Unknown level 错误",
+        "总行数必须为奇数，否则报 'Number of samples must be odd'",
+        "v 列数必须能被 rpd(J) 整除，否则 I(天数) 计算错误",
+        "如果数据中只有 Low 和 High 没有 Mid，不适用本方法（EP10 需要三水平）"
+      ],
+      "notes": [
+        "EP10 一次实验可同时评估偏差、不精密度、携带污染、漂移、非线性 5 项指标",
+        "携带污染率 B2adj% 是最核心指标，通常要求 < 1%~3%",
+        "t 检验自由度恒为 4（5 个参数的回归），与样本量无关"
+      ]
+    },
+    {
+      "name": "descriptives",
+      "ns": "jmv",
+      "title": "Descriptives",
+      "category": "Descriptive",
+      "subgroup": "Summary Statistics",
+      "purpose": "描述性统计，计算连续变量的集中趋势、离散程度、分布形态等统计量，并可生成直方图、箱线图等图表。",
+      "适用场景": [
+        "数据探索性分析",
+        "连续变量的基本统计描述",
+        "按分组变量分层描述"
+      ],
+      "data_requirements": {
+        "description": "需要至少一个连续数值变量。可选一个分组变量用于分层描述。",
+        "required_columns": [
+          {"name": "vars", "type": "DECIMAL/CONTINUOUS", "description": "要描述的连续变量，可多选"}
+        ],
+        "optional_columns": [
+          {"name": "splitBy", "type": "NOMINAL", "description": "分组变量，按其水平分别输出统计量"}
+        ],
+        "example_csv": "Species,Sepal.Length,Sepal.Width\nsetosa,5.1,3.5\nsetosa,4.9,3.0\nversicolor,7.0,3.2"
+      },
+      "parameters": [
+        {"name": "vars", "type": "Variables", "required": true, "title": "Variables", "description": "要描述的连续变量列表"},
+        {"name": "splitBy", "type": "Variable", "required": false, "title": "Split by", "description": "分组变量"},
+        {"name": "freq", "type": "Bool", "required": false, "default": false, "title": "Frequency tables"},
+        {"name": "desc", "type": "List", "required": false, "default": "columns", "title": "Descriptives", "description": "统计量显示方式：columns(列)或rows(行)"},
+        {"name": "hist", "type": "Bool", "required": false, "default": false, "title": "Histogram"},
+        {"name": "box", "type": "Bool", "required": false, "default": false, "title": "Box plot"},
+        {"name": "qq", "type": "Bool", "required": false, "default": false, "title": "Q-Q plot"},
+        {"name": "n", "type": "Bool", "required": false, "default": true, "title": "N"},
+        {"name": "missing", "type": "Bool", "required": false, "default": true, "title": "Missing"},
+        {"name": "mean", "type": "Bool", "required": false, "default": true, "title": "Mean"},
+        {"name": "median", "type": "Bool", "required": false, "default": true, "title": "Median"},
+        {"name": "sd", "type": "Bool", "required": false, "default": true, "title": "Std. deviation"},
+        {"name": "se", "type": "Bool", "required": false, "default": false, "title": "Std. error"},
+        {"name": "min", "type": "Bool", "required": false, "default": true, "title": "Minimum"},
+        {"name": "max", "type": "Bool", "required": false, "default": true, "title": "Maximum"},
+        {"name": "iqr", "type": "Bool", "required": false, "default": false, "title": "IQR"},
+        {"name": "skew", "type": "Bool", "required": false, "default": false, "title": "Skewness"},
+        {"name": "kurt", "type": "Bool", "required": false, "default": false, "title": "Kurtosis"},
+        {"name": "sw", "type": "Bool", "required": false, "default": false, "title": "Shapiro-Wilk p", "description": "正态性检验 p 值"}
+      ],
+      "key_parameter_guide": [
+        "vars 是唯一必填参数",
+        "默认输出 N, Missing, Mean, Median, SD, Min, Max",
+        "需要正态性检验时勾选 sw（Shapiro-Wilk），但样本量 >5000 时不适用",
+        "splitBy 是单个变量（不是列表），用于分组"
+      ],
+      "steps": [
+        "1. 调用 get_dataset 确认有连续数值变量",
+        "2. 调用 run_analysis：vars=[变量名列表]，可选 splitBy=分组变量",
+        "3. 如需正态性检验，加 sw=true；如需图表加 hist=true/box=true",
+        "4. 调用 interpret_result 读取均值、SD、正态性 p 值等"
+      ],
+      "verified_example": {
+        "analysis_name": "descriptives",
+        "ns": "jmv",
+        "options": {"vars": ["Sepal.Length", "Sepal.Width"], "splitBy": "Species", "sw": true},
+        "test_data": "iris.csv",
+        "expected_result": "ANALYSIS_COMPLETE, 按 Species 分组输出描述统计量和 Shapiro-Wilk p 值"
+      },
+      "result_tables": [
+        {"table": "descriptives", "fields": "N, Missing, Mean, Median, SD, SE, Min, Max, IQR, Skew, Kurt, SW p", "description": "主结果表，每个变量一行（或每个分组一行）", "interpretation": "SW p > 0.05 表示不拒绝正态假设；偏度绝对值>1 表示严重偏态"}
+      ],
+      "common_pitfalls": [
+        "vars 必须是连续变量（DECIMAL/CONTINUOUS），分类变量会导致计算无意义",
+        "splitBy 是单个变量名（字符串），不是列表",
+        "Shapiro-Wilk 检验要求 3≤N≤5000，超出范围会报错或不输出"
+      ],
+      "notes": [
+        "这是最基础的统计方法，几乎所有分析前都应先做描述性统计",
+        "偏度>0 右偏，<0 左偏；峰度>0 尖峰，<0 平峰"
+      ]
+    },
+    {
+      "name": "CommutabilityEP14A3",
+      "ns": "ReferenceMaterial",
+      "title": "Commutability EP14-A3",
+      "category": "IVD",
+      "subgroup": "Commutability",
+      "purpose": "互通性评估（CLSI EP14-A3），评估参考物质在两个检测系统间的互通性，通过临床样本建立回归预测区间，判断参考物质是否落在区间内。",
+      "适用场景": [
+        "参考物质互通性评估（CLSI EP14-A3）",
+        "标准物质/校准品在不同方法间的互通性验证",
+        "室间质评样本的互通性判断"
+      ],
+      "data_requirements": {
+        "description": "需要临床样本(CS)和参考物质(RM)在两个检测系统(X和Y)上的测量结果。临床样本用于建立回归，参考物质用于判断互通性。",
+        "required_columns": [
+          {"name": "csx", "type": "Variables", "description": "临床样本在系统X上的重复测量列（至少2列）"},
+          {"name": "csy", "type": "Variables", "description": "临床样本在系统Y上的重复测量列（至少2列）"},
+          {"name": "rmx", "type": "Variables", "description": "参考物质在系统X上的重复测量列（至少2列）"},
+          {"name": "rmy", "type": "Variables", "description": "参考物质在系统Y上的重复测量列（至少2列）"}
+        ],
+        "row_count": "临床样本至少 20 个（EP14-A3 推荐），参考物质数量不限",
+        "replicates": "每个样本在每个系统上至少 2 次重复测量（用于计算测量不确定度）",
+        "example_csv": "csx1,csx2,csy1,csy2,rmx1,rmx2,rmy1,rmy2\n1.1,1.2,1.3,1.2,5.0,5.1,5.2,5.1\n2.1,2.0,2.2,2.1,6.0,6.1,6.2,6.1"
+      },
+      "parameters": [
+        {"name": "csx", "type": "Variables", "required": true, "title": "Clinical Sample X", "description": "临床样本系统X重复测量列"},
+        {"name": "csy", "type": "Variables", "required": true, "title": "Clinical Sample Y", "description": "临床样本系统Y重复测量列"},
+        {"name": "rmx", "type": "Variables", "required": true, "title": "Reference Material X", "description": "参考物质系统X重复测量列"},
+        {"name": "rmy", "type": "Variables", "required": true, "title": "Reference Material Y", "description": "参考物质系统Y重复测量列"},
+        {"name": "csid", "type": "Variable", "required": false, "title": "CS ID", "description": "临床样本ID列"},
+        {"name": "rmid", "type": "Variable", "required": false, "title": "RM ID", "description": "参考物质ID列"},
+        {"name": "ln", "type": "Bool", "required": false, "default": false, "title": "Log transform", "description": "是否对数据做对数变换（适用于浓度跨度大的情况）"},
+        {"name": "ci", "type": "Number", "required": false, "default": 95, "title": "Confidence Interval %", "description": "预测区间置信水平"}
+      ],
+      "key_parameter_guide": [
+        "csx/csy/rmx/rmy 四个参数都是变量列表（Variables），每个至少 2 列重复",
+        "重复测量列数 csx 和 csy 可以不同，rmx 和 rmy 也可以不同",
+        "ln=true 时所有数据先做自然对数变换，适用于跨浓度量级的数据",
+        "如果只有单次重复（1列），测量不确定度为0，预测区间会过窄，不推荐"
+      ],
+      "steps": [
+        "1. 调用 get_dataset 确认有 csx/csy/rmx/rmy 四组重复测量列",
+        "2. 确认每组至少 2 列重复测量",
+        "3. 调用 run_analysis：csx=[...], csy=[...], rmx=[...], rmy=[...]",
+        "4. 调用 interpret_result，重点查看参考物质是否落在预测区间内（互通/不互通）"
+      ],
+      "verified_example": {
+        "analysis_name": "CommutabilityEP14A3",
+        "ns": "ReferenceMaterial",
+        "options": {"csx": ["csx1", "csx2"], "csy": ["csy1", "csy2"], "rmx": ["rmx1", "rmx2"], "rmy": ["rmy1", "rmy2"]},
+        "test_data": "ivd_commutabilityep14a3.csv",
+        "expected_result": "ANALYSIS_COMPLETE, 输出每个参考物质的互通性判断（Commutable/Non-commutable）"
+      },
+      "result_tables": [
+        {"table": "regression", "fields": "slope, intercept, R²", "description": "临床样本 Deming/OLS 回归参数", "interpretation": "R² 越高表示两系统相关性越好"},
+        {"table": "prediction_interval", "fields": "lower, upper", "description": "每个参考物质浓度处的预测区间", "interpretation": "参考物质 Y 值落在 [lower, upper] 内则互通"},
+        {"table": "commutability_result", "fields": "RM_ID, X_mean, Y_mean, lower, upper, result", "description": "每个参考物质的互通性判断", "interpretation": "result=Commutable 表示互通，Non-commutable 表示不互通"}
+      ],
+      "result_interpretation": {
+        "commutable": "参考物质的 Y 测量值落在临床样本回归预测区间内 → 互通",
+        "non_commutable": "参考物质落在预测区间外 → 不互通，该参考物质不能用于校准或质量评价",
+        "prediction_interval": "预测区间 = 回归预测值 ± 临界值 × sqrt(测量方差+回归残差方差)，比置信区间宽"
+      },
+      "common_pitfalls": [
+        "每组必须至少 2 列重复测量，否则测量方差为0导致预测区间异常",
+        "临床样本数建议 ≥20，样本太少回归不稳定",
+        "csx/csy/rmx/rmy 的列数可以不同，但同一组内的列数代表重复次数",
+        "浓度跨度大时（如跨越 10 倍以上），建议 ln=true 做对数变换"
+      ],
+      "notes": [
+        "EP14-A3 是互通性评估的金标准指南",
+        "互通性判断基于预测区间（不是置信区间），因为要考虑个体变异",
+        "互通性是参考物质的基本属性，不互通的参考物质不能用于方法学校准"
+      ]
+    }
+  ]
+}

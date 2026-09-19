@@ -1,0 +1,35 @@
+{
+  "name": "data_export",
+  "title": "📤 数据导出",
+  "description": "帮助用户导出清洗后的数据、分析结果表格为 CSV/Excel 格式，方便在其他软件中使用或存档。",
+  "category": "结果输出",
+  "applicable_scenarios": [
+    "需要导出清洗后的数据",
+    "需要导出分析结果表格",
+    "需要在 Excel 中进一步处理",
+    "需要存档原始数据和结果",
+    "需要分享数据给同事"
+  ],
+  "workflow": [
+    "1. 确认用户要导出什么：原始数据？清洗后的数据？分析结果？",
+    "2. 调用 get_dataset_info 确认当前数据结构",
+    "3. 如果导出数据：指导用户使用 iMast 的 File → Export 功能",
+    "4. 如果导出分析结果：",
+    "   - 调用 get_analysis_results 获取结果",
+    "   - 将结果整理成表格格式",
+    "   - 指导用户复制到 Excel 或导出",
+    "5. 确认导出格式：CSV、Excel、TXT",
+    "6. 提醒导出时注意变量名、编码、小数位"
+  ],
+  "tools_to_use": [
+    "get_dataset_info",
+    "get_analysis_results",
+    "interpret_result"
+  ],
+  "key_outputs": [
+    "导出指导步骤",
+    "整理好的结果表格",
+    "导出格式建议"
+  ],
+  "notes": "数据导出注意事项：CSV 文件建议用 UTF-8 编码避免中文乱码；导出前确认变量名和列顺序；分析结果导出时要包含完整的统计量和置信区间。"
+}

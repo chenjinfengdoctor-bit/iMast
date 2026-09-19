@@ -1,0 +1,33 @@
+{
+  "name": "data_import_wizard",
+  "title": "📥 数据导入向导",
+  "description": "指导用户完成数据导入，自动识别数据格式，处理常见导入错误，确保数据正确加载到 iMast 中。",
+  "category": "数据准备",
+  "applicable_scenarios": [
+    "不知道如何导入数据",
+    "CSV/Excel 文件格式不对",
+    "导入后数据列错位",
+    "数据编码问题（乱码）",
+    "需要从文档中提取数据"
+  ],
+  "workflow": [
+    "1. 询问用户数据文件的位置和格式（CSV、Excel、TXT 等）",
+    "2. 如果用户有文档（PDF/Word），先使用 /upload 端点上传文档，AI 解析文档内容",
+    "3. 指导用户使用 iMast 的 File → Open 或 File → Import 功能导入数据",
+    "4. 导入后调用 get_dataset_info 检查数据结构：行数、列数、变量名、数据类型",
+    "5. 发现问题（列错位、乱码、类型错误）时，给出具体的修复建议",
+    "6. 确认数据导入正确后，提示用户下一步可以做什么（清洗、分析等）"
+  ],
+  "tools_to_use": [
+    "get_dataset_info",
+    "get_dataframe_info",
+    "set_column_type",
+    "upload_document (/upload)"
+  ],
+  "key_outputs": [
+    "数据导入成功确认",
+    "数据结构摘要（行数、列数、变量列表）",
+    "导入问题诊断和修复建议"
+  ],
+  "notes": "数据导入是分析的第一步，务必确保数据结构正确。常见问题：列分隔符不对、编码问题（GBK/UTF-8）、首行是否为表头、数值列包含文本。"
+}

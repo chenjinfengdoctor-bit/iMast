@@ -1,0 +1,524 @@
+{
+  "PrecisionEvaluation": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_precisionevaluation.csv",
+    "options": {
+      "hcx": "hcx",
+      "hcy": "hcy",
+      "lcx": "lcx",
+      "lcy": "lcy"
+    }
+  },
+  "AccuracyEvaluation": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_accuracyevaluation.csv",
+    "options": {
+      "l": "l",
+      "x": "x",
+      "y": "y",
+      "rs": [
+        {
+          "l": 1,
+          "r": 5,
+          "u": 0.5
+        }
+      ]
+    }
+  },
+  "CommutabilityIFCC": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_commutabilityifcc.csv",
+    "options": {
+      "csid": "csid",
+      "csxy": [
+        {
+          "i1": "csx1",
+          "i2": "csy1"
+        },
+        {
+          "i1": "csx2",
+          "i2": "csy2"
+        }
+      ],
+      "rmid": "rmid",
+      "rmp": "rmp",
+      "rmxy": [
+        {
+          "i1": "rmx1",
+          "i2": "rmy1"
+        },
+        {
+          "i1": "rmx2",
+          "i2": "rmy2"
+        }
+      ],
+      "ln": false
+    }
+  },
+  "Linearity": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_linearity.csv",
+    "options": {
+      "l": "l",
+      "x": "x",
+      "y": "y",
+      "hs": 160,
+      "ls": 5,
+      "prc": 7,
+      "rc": [
+        {
+          "l": 1,
+          "rc": 0
+        },
+        {
+          "l": 2,
+          "rc": 0.2
+        },
+        {
+          "l": 3,
+          "rc": 0.4
+        },
+        {
+          "l": 4,
+          "rc": 0.5
+        },
+        {
+          "l": 5,
+          "rc": 0.6
+        },
+        {
+          "l": 6,
+          "rc": 0.8
+        },
+        {
+          "l": 7,
+          "rc": 1
+        }
+      ]
+    }
+  },
+  "Carryover": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_carryover.csv",
+    "options": {
+      "l": "l",
+      "v": [
+        "v1",
+        "v2",
+        "v3"
+      ]
+    }
+  },
+  "CommutabilityEP14A3": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_commutabilityep14a3.csv",
+    "options": {
+      "csid": "csid",
+      "csx": [
+        "csx1",
+        "csx2"
+      ],
+      "csy": [
+        "csy1",
+        "csy2"
+      ],
+      "rmid": "rmid",
+      "rmp": "rmp",
+      "rmx": [
+        "rmx1",
+        "rmx2"
+      ],
+      "rmy": [
+        "rmy1",
+        "rmy2"
+      ],
+      "ln": false
+    }
+  },
+  "CommutabilityEP30ARegression": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_commutabilityep30aregression.csv",
+    "options": {
+      "csid": "csid",
+      "csx": [
+        "csx1",
+        "csx2"
+      ],
+      "csy": [
+        "csy1",
+        "csy2"
+      ],
+      "rmid": "rmid",
+      "rmp": "rmp",
+      "rmx": [
+        "rmx1",
+        "rmx2"
+      ],
+      "rmy": [
+        "rmy1",
+        "rmy2"
+      ],
+      "ln": false
+    }
+  },
+  "CommuntabilityEP30ABias": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_communtabilityep30abias.csv",
+    "options": {
+      "csid": "csid",
+      "csx": [
+        "csx1",
+        "csx2"
+      ],
+      "csy": [
+        "csy1",
+        "csy2"
+      ],
+      "rmid": "rmid",
+      "rmp": "rmp",
+      "rmx": [
+        "rmx1",
+        "rmx2"
+      ],
+      "rmy": [
+        "rmy1",
+        "rmy2"
+      ],
+      "ln": false
+    }
+  },
+  "Sampling": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_sampling.csv",
+    "options": {
+      "csid": "csid",
+      "cs": "cs",
+      "l": 65,
+      "r": 78,
+      "n": 10
+    }
+  },
+  "RandomSampling": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_randomsampling.csv",
+    "options": {
+      "csid": "csid"
+    }
+  },
+  "Stability": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_stability.csv",
+    "options": {
+      "x": "x",
+      "y": [
+        "y1",
+        "y2",
+        "y3"
+      ]
+    }
+  },
+  "RelativeEquivlence": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_relativeequivlence.csv",
+    "options": {
+      "xcm1": 50,
+      "xcm2": 50,
+      "uxcm2": 0.5,
+      "ycm1": [
+        "ycm1_1",
+        "ycm1_2",
+        "ycm1_3"
+      ],
+      "ycm2": [
+        "ycm2_1",
+        "ycm2_2",
+        "ycm2_3"
+      ]
+    }
+  },
+  "EstimatingBiasFromDifferencePlot": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_estimatingbiasfromdifferenceplot.csv",
+    "options": {
+      "x": "x",
+      "y": "y"
+    }
+  },
+  "FittingALineToScatterPlots": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_fittingalinetoscatterplots.csv",
+    "options": {
+      "x": "x",
+      "y": "y"
+    }
+  },
+  "CharacterizingInterferenceEffects": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_characterizinginterferenceeffects.csv",
+    "options": {
+      "l": "l",
+      "v": [
+        "v1",
+        "v2",
+        "v3"
+      ],
+      "ic": [
+        {
+          "l": 1,
+          "c": 0
+        },
+        {
+          "l": 2,
+          "c": 10
+        },
+        {
+          "l": 3,
+          "c": 20
+        },
+        {
+          "l": 4,
+          "c": 30
+        },
+        {
+          "l": 5,
+          "c": 40
+        }
+      ],
+      "cb": false,
+      "eb": false
+    }
+  },
+  "InterferenceScreeningTesting": {
+    "ns": "ReferenceMaterial",
+    "csv": "ivd_interferencescreeningtesting.csv",
+    "options": {
+      "l": "l",
+      "g": "g",
+      "v": [
+        "v1",
+        "v2"
+      ]
+    }
+  },
+  "TOSTSampleSize": {
+    "ns": "ReferenceMaterial",
+    "csv": null,
+    "options": {
+      "input": "rep",
+      "power": 0.8,
+      "alpha": 0.05,
+      "r": 4,
+      "delta": 0,
+      "sel": 1,
+      "cssd1": 0.5,
+      "cssd2": 0.5,
+      "csnsf": 1,
+      "rmsd1": 0.5,
+      "rmsd2": 0.5,
+      "rmnsf": 1,
+      "v": 3
+    }
+  },
+  "SampleSizeForIST": {
+    "ns": "ReferenceMaterial",
+    "csv": null,
+    "options": {
+      "side": "o",
+      "power": 0.2,
+      "alpha": 0.05,
+      "precision": 1,
+      "diff": 1.5
+    }
+  },
+  "Stocking": {
+    "ns": "ReferenceMaterial",
+    "csv": null,
+    "options": {
+      "munit": "mg",
+      "vunit": "mL",
+      "sr": 20,
+      "sv": 2,
+      "mw": 58.44,
+      "wth": 1
+    }
+  },
+  "CertifiedValue": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_certifiedvalue.csv",
+    "options": {
+      "x": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "a": 0.05
+    }
+  },
+  "UCV": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_ucv.csv",
+    "options": {
+      "x": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "c": 50,
+      "mpem": 0.1,
+      "m": 3,
+      "uwcal": 0.2,
+      "cwcal": 50,
+      "a": 0.05
+    }
+  },
+  "UFH": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_ufh.csv",
+    "options": {
+      "x": [
+        "x1",
+        "x2",
+        "x3"
+      ]
+    }
+  },
+  "BOS": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_bos.csv",
+    "options": {
+      "x": "x",
+      "y": [
+        "y1",
+        "y2",
+        "y3"
+      ]
+    }
+  },
+  "FTS": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_fts.csv",
+    "options": {
+      "x": "x",
+      "y": [
+        "y1",
+        "y2",
+        "y3"
+      ]
+    }
+  },
+  "lts": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_lts.csv",
+    "options": {
+      "x": "x",
+      "y": [
+        "y1",
+        "y2",
+        "y3"
+      ]
+    }
+  },
+  "CSS": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_css.csv",
+    "options": {
+      "x": "x",
+      "y": [
+        "y1",
+        "y2",
+        "y3"
+      ]
+    }
+  },
+  "SS": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_ss.csv",
+    "options": {
+      "x": "x",
+      "y": [
+        "y1",
+        "y2",
+        "y3"
+      ]
+    }
+  },
+  "RTS": {
+    "ns": "CommutabilityAndStability",
+    "csv": "ivd_rts.csv",
+    "options": {
+      "x": "x",
+      "y": [
+        "y1",
+        "y2",
+        "y3"
+      ]
+    }
+  },
+  "CSU": {
+    "ns": "CommutabilityAndStability",
+    "csv": null,
+    "options": {
+      "uchar": 0.5,
+      "ubb": 0.3,
+      "ust1": 0.1,
+      "ust2": 0.1,
+      "ust3": 0.1,
+      "ust4": 0.1,
+      "ust5": 0.1,
+      "ust6": 0.1,
+      "k": 2
+    }
+  },
+  "homogeneity": {
+    "ns": "Proficiency",
+    "csv": "ivd_homogeneity.csv",
+    "options": {
+      "target": [
+        "target1",
+        "target2",
+        "target3"
+      ]
+    }
+  },
+  "ubb": {
+    "ns": "YYT1709",
+    "csv": "ivd_ubb.csv",
+    "options": {
+      "x": [
+        "x1",
+        "x2",
+        "x3"
+      ]
+    }
+  },
+  "us": {
+    "ns": "YYT1709",
+    "csv": "ivd_us.csv",
+    "options": {
+      "time": "time",
+      "x": [
+        "x1",
+        "x2",
+        "x3"
+      ]
+    }
+  },
+  "uchar": {
+    "ns": "YYT1709",
+    "csv": "ivd_uchar.csv",
+    "options": {
+      "x": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "Cwcal": 50,
+      "Uwcal": 0.5,
+      "k": 2,
+      "Uorel": 0.1,
+      "autow": false,
+      "single": true,
+      "w": "x1"
+    }
+  }
+}

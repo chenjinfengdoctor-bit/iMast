@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>Starting iMast...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+      color: #e8eef2;
+      overflow: hidden;
+    }
+    .wrap {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+    }
+    .logo {
+      width: 72px; height: 72px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 34px; font-weight: 700;
+      margin-bottom: 28px;
+      letter-spacing: 1px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #9fb3bd;
+      margin-bottom: 40px;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-top-color: #4fc3f7;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin-bottom: 28px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status {
+      font-size: 15px;
+      color: #cfe3ec;
+      min-height: 22px;
+      margin-bottom: 18px;
+    }
+    .progress {
+      width: 320px; max-width: 80%;
+      height: 4px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .bar {
+      height: 100%;
+      width: 30%;
+      background: #4fc3f7;
+      border-radius: 2px;
+      animation: slide 1.4s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+    /* Error state */
+    .error-box { display: none; max-width: 460px; }
+    .error-box h2 { color: #ff8a80; font-size: 20px; margin-bottom: 14px; }
+    .error-msg {
+      background: rgba(255,255,255,0.06);
+      border-left: 3px solid #ff8a80;
+      padding: 14px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e8eef2;
+      text-align: left;
+      margin-bottom: 24px;
+      word-break: break-word;
+    }
+    .retry-btn {
+      background: #4fc3f7;
+      color: #0f2027;
+      border: none;
+      padding: 10px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .retry-btn:hover { background: #6fd0fb; }
+    body.error .loading-view { display: none; }
+    body.error .error-box { display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="loading-view">
+      <div class="logo">iM</div>
+      <h1>Starting iMast backend...</h1>
+      <div class="subtitle">Please wait while the local analysis environment is prepared</div>
+      <div class="spinner"></div>
+      <div class="status" id="status">Initializing...</div>
+      <div class="progress"><div class="bar"></div></div>
+    </div>
+
+    <div class="error-box">
+      <h2>Could not start iMast</h2>
+      <div class="error-msg" id="errorMsg">An unexpected error occurred.</div>
+      <button class="retry-btn" id="retryBtn">Retry</button>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const errorMsgEl = document.getElementById('errorMsg');
+    const retryBtn = document.getElementById('retryBtn');
+
+    window.imastBridge.onStatus(function (data) {
+      statusEl.textContent = data.detail || '';
+      document.body.classList.remove('error');
+    });
+
+    window.imastBridge.onError(function (data) {
+      errorMsgEl.textContent = data.message || 'Unknown error.';
+      document.body.classList.add('error');
+    });
+
+    retryBtn.addEventListener('click', function () {
+      document.body.classList.remove('error');
+      statusEl.textContent = 'Retrying...';
+      window.imastBridge.retry();
+    });
+  </script>
+</body>
+</html>

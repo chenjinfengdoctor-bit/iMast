@@ -1,0 +1,35 @@
+{
+  "name": "variable_type_config",
+  "title": "🏷️ 变量类型配置",
+  "description": "根据后续分析目的，自动设置变量的测量类型（ID/NOMINAL/ORDINAL/CONTINUOUS），确保分析顺利执行。",
+  "category": "数据准备",
+  "applicable_scenarios": [
+    "变量类型不对，分析报错",
+    "不知道每个变量应该设为什么类型",
+    "ID 列被当成连续变量",
+    "分类变量被当成连续变量",
+    "分析前需要检查变量类型"
+  ],
+  "workflow": [
+    "1. 询问用户接下来要做什么分析（或根据上下文推断）",
+    "2. 调用 infer_and_set_variable_types 自动推断并设置变量类型",
+    "3. 调用 get_workflow(analysis_name=...) 获取该分析对变量类型的要求",
+    "4. 对比当前变量类型和期望类型，找出不一致的变量",
+    "5. 调用 set_column_type 修正不一致的变量类型",
+    "6. 验证修正结果：再次调用 get_dataframe_info 确认类型已更新",
+    "7. 向用户报告修正了哪些变量的类型"
+  ],
+  "tools_to_use": [
+    "infer_and_set_variable_types",
+    "get_workflow",
+    "set_column_type",
+    "get_dataframe_info"
+  ],
+  "key_outputs": [
+    "当前变量类型列表",
+    "期望变量类型列表",
+    "修正的变量类型记录",
+    "验证结果确认"
+  ],
+  "notes": "变量类型是统计分析的基础：ID 列必须是 NOMINAL（不能是 ID 类型，否则分析工具不认识），测量值必须是 CONTINUOUS，分组变量通常是 NOMINAL。IVD 常见：CS ID/rmid → NOMINAL，测量值 → CONTINUOUS。"
+}

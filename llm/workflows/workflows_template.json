@@ -1,0 +1,245 @@
+{
+  "workflow_version": "1.0",
+  "description": "iMast 统计方法操作工作流模板，AI 按照此工作流执行统计分析",
+  "methods": [
+    {
+      "name": "ArithmeticMeanDirect",
+      "ns": "Descriptive",
+      "title": "Arithmetic Mean (Direct Method)",
+      "category": "Descriptive Statistics",
+      "purpose": "计算一个或多个连续变量的算术均数",
+      "适用场景": "数据呈近似正态分布时，描述数据的集中趋势",
+      "parameters": [
+        {
+          "name": "x",
+          "type": "Variables",
+          "required": true,
+          "title": "X",
+          "description": "要计算均数的变量列表，可以是一个或多个数值型变量",
+          "example": ["Sepal.Length", "Sepal.Width"]
+        },
+        {
+          "name": "data",
+          "type": "Data",
+          "required": false,
+          "description": "数据集，通常自动使用当前数据集"
+        }
+      ],
+      "steps": [
+        "1. 调用 get_dataset 确认数据集中有数值型变量",
+        "2. 确认用户指定的变量名存在于数据集中",
+        "3. 调用 run_analysis，参数：analysis_name='ArithmeticMeanDirect', ns='Descriptive', options={'x': ['变量名']}",
+        "4. 调用 interpret_result 解读计算结果"
+      ],
+      "result_fields": [
+        {"name": "mean", "description": "算术均数"},
+        {"name": "n", "description": "样本量"},
+        {"name": "std", "description": "标准差"}
+      ],
+      "example": {
+        "analysis_name": "ArithmeticMeanDirect",
+        "ns": "Descriptive",
+        "options": {"x": ["Sepal.Length", "Sepal.Width"]}
+      },
+      "notes": [
+        "变量必须是数值型（连续变量）",
+        "可以同时计算多个变量的均数",
+        "如果数据中有缺失值，会自动排除"
+      ]
+    },
+    {
+      "name": "ttestIS",
+      "ns": "jmv",
+      "title": "Independent Samples T-Test",
+      "category": "Hypothesis Testing",
+      "purpose": "比较两个独立样本的均值是否存在显著差异",
+      "适用场景": "两组独立样本，因变量为连续变量，自变量为二分类变量",
+      "parameters": [
+        {
+          "name": "vars",
+          "type": "Variables",
+          "required": true,
+          "title": "Dependent Variables",
+          "description": "因变量（连续变量），可以是一个或多个",
+          "example": ["Sepal.Length"]
+        },
+        {
+          "name": "group",
+          "type": "Variable",
+          "required": true,
+          "title": "Grouping Variable",
+          "description": "分组变量（二分类名义变量）",
+          "example": "Species"
+        },
+        {
+          "name": "students",
+          "type": "Bool",
+          "required": false,
+          "default": true,
+          "description": "Student's t检验（假设方差齐性）"
+        },
+        {
+          "name": "welchs",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "Welch's t检验（不假设方差齐性）"
+        },
+        {
+          "name": "mann",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "Mann-Whitney U检验（非参数检验）"
+        },
+        {
+          "name": "norm",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "正态性检验"
+        },
+        {
+          "name": "eqv",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "方差齐性检验"
+        },
+        {
+          "name": "meanDiff",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "显示均值差"
+        },
+        {
+          "name": "ci",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "显示置信区间"
+        },
+        {
+          "name": "effectSize",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "显示效应量"
+        },
+        {
+          "name": "desc",
+          "type": "Bool",
+          "required": false,
+          "default": false,
+          "description": "显示描述性统计表"
+        }
+      ],
+      "steps": [
+        "1. 调用 get_dataset 确认因变量是连续变量，分组变量是二分类名义变量",
+        "2. 确认分组变量只有两个水平",
+        "3. 调用 run_analysis，参数：analysis_name='ttestIS', ns='jmv', options={'vars': ['因变量'], 'group': '分组变量', 'students': true, 'norm': true, 'eqv': true}",
+        "4. 根据正态性检验和方差齐性检验结果，判断是否需要使用 Welch's t检验或非参数检验",
+        "5. 如果需要，重新调用 run_analysis 并设置 welchs=true 或 mann=true",
+        "6. 调用 interpret_result 解读检验结果"
+      ],
+      "result_fields": [
+        {"name": "t", "description": "t统计量"},
+        {"name": "df", "description": "自由度"},
+        {"name": "p", "description": "P值（显著性）"},
+        {"name": "meanDiff", "description": "均值差"},
+        {"name": "effectSize", "description": "效应量（Cohen's d）"}
+      ],
+      "example": {
+        "analysis_name": "ttestIS",
+        "ns": "jmv",
+        "options": {
+          "vars": ["Sepal.Length"],
+          "group": "Species",
+          "students": true,
+          "welchs": true,
+          "norm": true,
+          "eqv": true,
+          "meanDiff": true,
+          "ci": true,
+          "effectSize": true,
+          "desc": true
+        }
+      },
+      "notes": [
+        "分组变量必须只有两个水平，如果有多个水平需要先筛选",
+        "先做正态性检验和方差齐性检验，再选择合适的检验方法",
+        "如果数据不正态，使用 Mann-Whitney U 检验（mann=true）",
+        "如果方差不齐，使用 Welch's t检验（welchs=true）"
+      ]
+    },
+    {
+      "name": "LinearRegression",
+      "ns": "Regression",
+      "title": "Linear Regression",
+      "category": "Regression Analysis",
+      "purpose": "建立两个连续变量之间的线性回归关系",
+      "适用场景": "自变量X和因变量Y都是连续变量，研究X对Y的线性预测关系",
+      "parameters": [
+        {
+          "name": "x",
+          "type": "Variable",
+          "required": true,
+          "title": "X",
+          "description": "自变量（连续变量）",
+          "example": "Sepal.Length"
+        },
+        {
+          "name": "y",
+          "type": "Variable",
+          "required": true,
+          "title": "Y",
+          "description": "因变量（连续变量）",
+          "example": "Petal.Length"
+        },
+        {
+          "name": "a",
+          "type": "List",
+          "required": false,
+          "default": "0.05",
+          "title": "alpha",
+          "description": "显著性水平"
+        },
+        {
+          "name": "x0",
+          "type": "Number",
+          "required": false,
+          "default": 0,
+          "title": "X0",
+          "description": "用于预测的X值（计算总体均值和个体Y值的预测区间）"
+        }
+      ],
+      "steps": [
+        "1. 调用 get_dataset 确认自变量和因变量都是连续变量",
+        "2. 调用 run_analysis，参数：analysis_name='LinearRegression', ns='Regression', options={'x': '自变量', 'y': '因变量'}",
+        "3. 调用 interpret_result 解读回归结果，包括回归系数、R方、显著性检验"
+      ],
+      "result_fields": [
+        {"name": "intercept", "description": "截距"},
+        {"name": "slope", "description": "斜率（回归系数）"},
+        {"name": "r_squared", "description": "决定系数R方"},
+        {"name": "p_value", "description": "回归系数显著性P值"},
+        {"name": "f_statistic", "description": "F统计量（整体显著性）"}
+      ],
+      "example": {
+        "analysis_name": "LinearRegression",
+        "ns": "Regression",
+        "options": {
+          "x": "Sepal.Length",
+          "y": "Petal.Length",
+          "a": "0.05"
+        }
+      },
+      "notes": [
+        "x和y都必须是单个连续变量，不是变量列表",
+        "回归方程：Y = intercept + slope * X",
+        "R方越接近1，说明线性关系越强"
+      ]
+    }
+  ]
+}
