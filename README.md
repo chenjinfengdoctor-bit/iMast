@@ -1,12 +1,12 @@
 # iMast
 
-**iMast** is a free, open-source, graphical statistical software for **in vitro diagnostic (IVD) measurement procedure evaluation**, built as an extension of [jamovi](https://www.jamovi.org). It implements 153 statistical methods across 15 self-developed R modules, covering 11 Clinical and Laboratory Standards Institute (CLSI) evaluation protocols (EP05, EP06, EP07, EP09, EP10, EP14, EP15, EP17, EP21, EP24, EP30) and the Guide to the Expression of Uncertainty in Measurement (GUM).
+**iMast** is a free, open-source, graphical statistical software for **reference material research and clinical measurement statistics**, built as an extension of [jamovi](https://www.jamovi.org). It implements 153 statistical methods across 15 self-developed R modules, covering reference-material characterization, commutability, homogeneity and stability, measurement uncertainty (GUM/JCGM 100), and the relevant Clinical and Laboratory Standards Institute (CLSI) evaluation protocols (EP05, EP06, EP09, EP10, EP14, EP15, EP17, EP21, EP24, EP30).
 
 iMast is published in the *Journal of Statistical Software*; see **Citation** below.
 
 ## Key features
 
-- **IVD-specific modules compliant with CLSI EP standards** — precision (EP05), linearity (EP06), interference (EP07), method comparison & bias (EP09), commutability (EP14 / EP30 / IFCC), measurement uncertainty (GUM), reference-material characterization, stability, carryover, and more.
+- **Reference-material-centered clinical statistics** — commutability (EP14 / EP30 / IFCC), characterization and value assignment, between-unit homogeneity, long-term stability, measurement uncertainty (GUM/JCGM 100), plus supporting precision, linearity and method-comparison procedures.
 - **Graphical user interface** — spreadsheet data editor, point-and-click analyses, exportable tables and plots, built on the mature jamovi GUI framework.
 - **Assumption checks before analysis** — distributional and homogeneity tests are run automatically to guide method choice.
 - **AI-assisted workflow** — an optional large-language-model assistant (DeepSeek) helps with data import, variable-type inference, and analysis guidance. Statistical computation remains fully deterministic in the R engine; the LLM only assists natural-language-to-workflow conversion.
@@ -27,10 +27,10 @@ imast/
 ├── llm/                # Python AI service (FastAPI)
 │   ├── server.py                 # LLM bridge, tool calling, skills
 │   ├── page.html                 # chat UI
-│   ├── skills/                   # preset IVD analysis workflows (JSON)
+│   ├── skills/                   # preset reference-material analysis workflows (JSON)
 │   └── workflows/                 # workflow parameter templates (JSON)
 ├── desktop/            # Electron desktop wrapper (main.js, preload.js, loading.html)
-├── data/               # example IVD datasets (CSV)
+├── data/               # example clinical / reference-material datasets (CSV)
 ├── replication/        # standalone R replication script for the paper
 └── LICENSE             # GNU AGPL v3
 ```
@@ -62,7 +62,7 @@ This reproduces the three case studies (EP05 precision, EP09/EP14-A3 method comp
 
 If you use iMast in your research, please cite the JSS article:
 
-> Z. Zhou, Z. Sun, Y. Yin, and J. Chen. (year). iMast: A jamovi-Based Graphical Statistical Software for In Vitro Diagnostic Evaluation. *Journal of Statistical Software*, **vol.**(issue), pages. URL https://jstatsoft.org/...
+> Z. Zhou, Y. Yin, and J. Chen. (year). iMast: Integrated Statistical Software for Reference Material Research with Assumption-Guarded Workflows and a Metrological Equivalence Model. *Journal of Statistical Software*, **vol.**(issue), pages. URL https://jstatsoft.org/...
 
 (Bibliographic details are completed at publication.)
 
@@ -73,6 +73,5 @@ iMast is free software released under the **GNU Affero General Public License v3
 ## Authors
 
 - **Zhiwei Zhou** — Peking University Cancer Hospital & Institute
-- **Zhongjie Sun** — Beihang University
 - **Yongfeng Yin** — Beihang University
 - **Jinfeng Chen** (corresponding) — Peking University Cancer Hospital & Institute, <chenjinfengdoctor@bjmu.edu.cn>
