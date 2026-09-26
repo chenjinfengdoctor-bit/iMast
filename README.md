@@ -17,10 +17,9 @@ iMast is published in the *Journal of Statistical Software*; see **Citation** be
 ```
 imast/
 ├── modules/            # 15 jamovi R modules (DESCRIPTION + R/*.b.R, *.h.R)
-│   ├── ReferenceMaterial/        # EP14-A3 commutability, EP30, precision,
-│   │                             #   linearity, interference, carryover, GUM...
+│   ├── ReferenceMaterial/        # commutability, homogeneity, stability,
+│   │                             #   characterization, uncertainty, equivalence
 │   ├── CommutabilityAndStability/
-│   ├── IVD/
 │   ├── Appraisal/                # appraisal ratio studies
 │   ├── YYT1709/                  # Chinese industry-standard (UBB, UCHAR, US)
 │   ├── ANOVA, Descriptive, Estimation, Regression, ChiSquare, ...
