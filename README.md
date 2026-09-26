@@ -21,7 +21,6 @@ imast/
 │   │                             #   characterization, uncertainty, equivalence
 │   ├── CommutabilityAndStability/
 │   ├── Appraisal/                # appraisal ratio studies
-│   ├── YYT1709/                  # Chinese industry-standard (UBB, UCHAR, US)
 │   ├── ANOVA, Descriptive, Estimation, Regression, ChiSquare, ...
 ├── llm/                # Python AI service (FastAPI)
 │   ├── server.py                 # LLM bridge, tool calling, skills
